@@ -65,7 +65,9 @@ const contentSchema = new mongoose.Schema({
   hero: {
     tagline: { type: String, default: "Multi-front roster // 4 active squads" },
     headline: { type: String, default: "Fly the Eyries colors" },
-    subtext: { type: String, default: "Live scores, squads, and gear across BGMI, Valorant, PES & Free Fire." }
+    subtext: { type: String, default: "Live scores, squads, and gear across BGMI, Valorant, PES & Free Fire." },
+    jerseyPhotoUrl: { type: String, default: "" }, // showcase image beside the hero text
+    carouselPhotos: { type: [String], default: ["", "", "", ""] } // 4 auto-scrolling photos, admin-editable URLs
   },
 
   founder: { type: personSchema, default: () => ({}) },

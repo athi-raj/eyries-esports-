@@ -348,6 +348,65 @@ document.querySelectorAll(".game-switch-btn").forEach((btn) => {
   });
 });
 
+/* ---------------------------------------------------------------------
+   HERO CAROUSEL — 4 auto-scrolling photos, admin-editable via paste-URL
+   --------------------------------------------------------------------- */
+let carouselIndex = 0;
+let carouselTimer = null;
+
+function renderHeroCarousel(photos) {
+  // Always show exactly 4 slots, even if some are empty placeholders.
+  const slots = [0, 1, 2, 3].map((i) => photos[i] || "");
+
+  const track = document.getElementById("heroCarouselTrack");
+  track.innerHTML = slots
+    .map((url, i) => {
+      const bg = url ? `style="background-image:url('${url}')"` : "";
+      const editAttrs = `data-edit-field="hero.carouselPhotos.${i}" data-edit-type="photo"`;
+      return `
+        <div class="hero-carousel-slide ${i === 0 ? "active" : ""}" data-slide-index="${i}" ${bg} ${editAttrs}>
+          ${url ? "" : `<span class="hero-carousel-slide-placeholder">Photo ${i + 1}</span>`}
+        </div>
+      `;
+    })
+    .join("");
+
+  const dots = document.getElementById("heroCarouselDots");
+  dots.innerHTML = slots
+    .map((_, i) => `<button class="hero-carousel-dot ${i === 0 ? "active" : ""}" data-dot-index="${i}"></button>`)
+    .join("");
+
+  dots.querySelectorAll(".hero-carousel-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      goToSlide(parseInt(dot.dataset.dotIndex, 10));
+      restartCarouselTimer();
+    });
+  });
+
+  attachEditHandlers();
+
+  carouselIndex = 0;
+  restartCarouselTimer();
+}
+
+function goToSlide(index) {
+  const slides = document.querySelectorAll(".hero-carousel-slide");
+  const dots = document.querySelectorAll(".hero-carousel-dot");
+  if (!slides.length) return;
+
+  carouselIndex = ((index % slides.length) + slides.length) % slides.length;
+
+  slides.forEach((slide, i) => slide.classList.toggle("active", i === carouselIndex));
+  dots.forEach((dot, i) => dot.classList.toggle("active", i === carouselIndex));
+}
+
+function restartCarouselTimer() {
+  clearInterval(carouselTimer);
+  carouselTimer = setInterval(() => {
+    goToSlide(carouselIndex + 1);
+  }, 5000);
+}
+
 function renderAll() {
   const c = siteContent;
 
@@ -355,6 +414,20 @@ function renderAll() {
   document.querySelector('[data-edit-field="hero.tagline"]').textContent = c.hero?.tagline || "";
   document.querySelector('[data-edit-field="hero.headline"]').textContent = c.hero?.headline || "";
   document.querySelector('[data-edit-field="hero.subtext"]').textContent = c.hero?.subtext || "";
+
+  // Hero jersey showcase photo
+  const heroJersey = document.getElementById("heroJersey");
+  const jerseyUrl = c.hero?.jerseyPhotoUrl || "";
+  if (jerseyUrl) {
+    heroJersey.style.backgroundImage = `url('${jerseyUrl}')`;
+    heroJersey.innerHTML = "";
+  } else {
+    heroJersey.style.backgroundImage = "";
+    heroJersey.innerHTML = `<span class="hero-jersey-placeholder">Jersey photo</span>`;
+  }
+
+  // Hero auto-scrolling photo carousel (4 slides, admin-editable)
+  renderHeroCarousel(c.hero?.carouselPhotos || ["", "", "", ""]);
 
   // Founder
   document.getElementById("founderCard").innerHTML = renderPersonCard(c.founder || {}, { editPrefix: "founder" });

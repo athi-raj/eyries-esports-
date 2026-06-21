@@ -47,8 +47,25 @@ router.get("/", async (req, res) => {
       }
     }
 
+    // Same safe backfill for the newer hero.jerseyPhotoUrl / hero.carouselPhotos
+    // fields — older documents won't have these yet.
+    if (content.hero && content.hero.jerseyPhotoUrl === undefined) {
+      content.hero.jerseyPhotoUrl = "";
+      needsSave = true;
+    }
+    if (!content.hero || !Array.isArray(content.hero.carouselPhotos)) {
+      content.hero.carouselPhotos = ["", "", "", ""];
+      needsSave = true;
+    } else if (content.hero.carouselPhotos.length < 4) {
+      while (content.hero.carouselPhotos.length < 4) {
+        content.hero.carouselPhotos.push("");
+      }
+      needsSave = true;
+    }
+
     if (needsSave) {
       content.markModified("squads");
+      content.markModified("hero");
       await content.save();
     }
 

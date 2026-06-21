@@ -91,14 +91,27 @@
     <!-- ============ HOME ============ -->
     <section class="panel" id="home">
       <div class="hero-slash"></div>
-      <div class="hero-tag" data-edit-field="hero.tagline" data-edit-type="text">Multi-front roster // 4 active squads</div>
-      <h1 class="hero-title" data-edit-field="hero.headline" data-edit-type="text">Fly the Eyries colors</h1>
-      <p class="hero-sub" data-edit-field="hero.subtext" data-edit-type="textarea">Live scores, squads, and gear across BGMI, Valorant, PES &amp; Free Fire.</p>
+
+      <div class="hero-top">
+        <div class="hero-text">
+          <div class="hero-tag" data-edit-field="hero.tagline" data-edit-type="text">Multi-front roster // 4 active squads</div>
+          <h1 class="hero-title" data-edit-field="hero.headline" data-edit-type="text">Fly the Eyries colors</h1>
+          <p class="hero-sub" data-edit-field="hero.subtext" data-edit-type="textarea">Live scores, squads, and gear across BGMI, Valorant, PES &amp; Free Fire.</p>
+        </div>
+        <div class="hero-jersey" id="heroJersey" data-edit-field="hero.jerseyPhotoUrl" data-edit-type="photo">
+          <span class="hero-jersey-placeholder">Jersey photo</span>
+        </div>
+      </div>
 
       <button class="scroll-cue" data-scrollto="about">
         <span>Scroll to explore</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       </button>
+
+      <div class="hero-carousel" id="heroCarousel">
+        <div class="hero-carousel-track" id="heroCarouselTrack"></div>
+        <div class="hero-carousel-dots" id="heroCarouselDots"></div>
+      </div>
     </section>
 
     <!-- ============ ABOUT ============ -->
