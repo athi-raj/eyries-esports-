@@ -581,13 +581,9 @@ function renderPersonCard(person, { editPrefix, deleteKey, size } = {}) {
     ? `<button class="person-delete-btn" data-delete-person="${deleteKey}">Delete</button>`
     : "";
   const photoClass = size ? `person-photo person-photo-${size}` : "person-photo";
-  // Founder/Co-Founder (size set) get a stacked, centered profile-card
-  // layout — photo on top, name+title centered below. Team (no size)
-  // keeps the original compact side-by-side row.
-  const rowClass = size ? "person-top-row person-top-row-stacked" : "person-top-row";
   return `
     <div class="person-card" ${editAttrs}>
-      <div class="${rowClass}">
+      <div class="person-top-row">
         <div class="${photoClass}" data-edit-field="${editPrefix}.photoUrl" data-edit-type="photo" ${photoStyle(person.photoUrl)}>
           ${person.photoUrl ? "" : initials(person.name)}
         </div>
@@ -642,13 +638,15 @@ function renderPlayerCard(player, prefix, index) {
   return `
     <div class="player-card-sq">
       <div class="player-status-badge">${statusControl}</div>
-      <div class="player-photo-sq" data-edit-field="${prefix}.photoUrl" data-edit-type="photo" ${photoStyle(player.photoUrl)}>
-        ${player.photoUrl ? "" : initials(player.name)}
-      </div>
-      <div class="player-info-sq">
-        <div class="player-name-sq" data-edit-field="${prefix}.name" data-edit-type="text">${player.name || "[Player name]"}</div>
-        <div class="player-gamingid-sq" data-edit-field="${prefix}.gamingId" data-edit-type="text">${player.gamingId || "[Gaming ID]"}</div>
-        <div class="player-role-sq" data-edit-field="${prefix}.role" data-edit-type="text">${player.role || "[Role]"}</div>
+      <div class="player-top-row">
+        <div class="player-photo-sq" data-edit-field="${prefix}.photoUrl" data-edit-type="photo" ${photoStyle(player.photoUrl)}>
+          ${player.photoUrl ? "" : initials(player.name)}
+        </div>
+        <div class="player-info-sq">
+          <div class="player-name-sq" data-edit-field="${prefix}.name" data-edit-type="text">${player.name || "[Player name]"}</div>
+          <div class="player-gamingid-sq" data-edit-field="${prefix}.gamingId" data-edit-type="text">${player.gamingId || "[Gaming ID]"}</div>
+          <div class="player-role-sq" data-edit-field="${prefix}.role" data-edit-type="text">${player.role || "[Role]"}</div>
+        </div>
       </div>
       ${deleteBtn}
     </div>
