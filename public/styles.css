@@ -395,10 +395,15 @@ a{color:inherit;text-decoration:none;}
   position:relative;
   overflow:hidden;
 }
-.person-photo-lg{
+.person-photo-founder{
   width:clamp(110px, 40vw, 220px);
   height:clamp(110px, 40vw, 220px);
   font-size:clamp(28px, 11vw, 52px);
+}
+.person-photo-cofounder{
+  width:clamp(100px, 33.33vw, 190px);
+  height:clamp(100px, 33.33vw, 190px);
+  font-size:clamp(26px, 10vw, 46px);
 }
 .person-info{flex:1;min-width:0;}
 .person-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;}
@@ -668,6 +673,32 @@ a{color:inherit;text-decoration:none;}
   font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--cyan);margin-top:3px;
 }
 .player-role-sq{font-size:11px;color:var(--text-dim);margin-top:4px;}
+
+.player-status{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:6px;
+  font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.05em;
+  text-transform:uppercase;
+}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.player-status.status-now{color:#38bdf8;}
+.player-status.status-now .status-dot{background:#38bdf8; box-shadow:0 0 6px #38bdf8;}
+.player-status.status-then{color:#f8fafc;}
+.player-status.status-then .status-dot{background:#f8fafc; box-shadow:0 0 6px #f8fafc;}
+
+.player-status-select{
+  margin-top:6px;
+  font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.05em;
+  text-transform:uppercase;
+  padding:5px 8px;
+  border-radius:6px;
+  background:var(--void);
+  border:1px solid var(--line);
+  cursor:pointer;
+}
+.player-status-select.status-now{color:#38bdf8; border-color:#38bdf8;}
+.player-status-select.status-then{color:#f8fafc; border-color:#f8fafc;}
+
 .player-delete-btn{
   font-family:'Rajdhani',sans-serif; font-size:11px; font-weight:700; letter-spacing:0.04em;
   padding:8px 12px; border-radius:6px; flex-shrink:0;

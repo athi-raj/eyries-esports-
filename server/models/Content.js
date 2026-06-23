@@ -46,7 +46,8 @@ const playerSchema = new mongoose.Schema(
     name: { type: String, default: "" },
     gamingId: { type: String, default: "" }, // in-game ID / IGN, distinct from real name
     role: { type: String, default: "" },     // e.g. "IGL", "Sniper", "Support"
-    photoUrl: { type: String, default: "" }
+    photoUrl: { type: String, default: "" },
+    status: { type: String, enum: ["now", "then"], default: "now" } // "now" = current roster, "then" = former player
   },
   { _id: false }
 );

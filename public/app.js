@@ -573,14 +573,14 @@ function photoStyle(photoUrl) {
   return photoUrl ? `style="background-image:url('${photoUrl}')"` : "";
 }
 
-function renderPersonCard(person, { editPrefix, deleteKey, large } = {}) {
+function renderPersonCard(person, { editPrefix, deleteKey, size } = {}) {
   const editAttrs = editPrefix
     ? `data-edit-group="${editPrefix}"`
     : "";
   const deleteBtn = deleteKey && isAdminUser()
     ? `<button class="person-delete-btn" data-delete-person="${deleteKey}">Delete</button>`
     : "";
-  const photoClass = large ? "person-photo person-photo-lg" : "person-photo";
+  const photoClass = size ? `person-photo person-photo-${size}` : "person-photo";
   return `
     <div class="person-card" ${editAttrs}>
       <div class="person-top-row">
@@ -621,6 +621,20 @@ function renderPlayerCard(player, prefix, index) {
   const deleteBtn = isAdminUser()
     ? `<button class="player-delete-btn" data-delete-player="${index}">Delete</button>`
     : "";
+
+  const status = player.status === "then" ? "then" : "now"; // default to "now" if missing/invalid
+
+  // Fans see a plain dot + label. Admins instead see a dropdown so they
+  // can switch a player between current ("Now") and former ("Then").
+  const statusControl = isAdminUser()
+    ? `
+      <select class="player-status-select status-${status}" data-status-select="${index}">
+        <option value="now" ${status === "now" ? "selected" : ""}>Now</option>
+        <option value="then" ${status === "then" ? "selected" : ""}>Then</option>
+      </select>
+    `
+    : `<span class="player-status status-${status}"><span class="status-dot"></span>${status === "now" ? "Now" : "Then"}</span>`;
+
   return `
     <div class="player-card-sq">
       <div class="player-photo-sq" data-edit-field="${prefix}.photoUrl" data-edit-type="photo" ${photoStyle(player.photoUrl)}>
@@ -630,6 +644,7 @@ function renderPlayerCard(player, prefix, index) {
         <div class="player-name-sq" data-edit-field="${prefix}.name" data-edit-type="text">${player.name || "[Player name]"}</div>
         <div class="player-gamingid-sq" data-edit-field="${prefix}.gamingId" data-edit-type="text">${player.gamingId || "[Gaming ID]"}</div>
         <div class="player-role-sq" data-edit-field="${prefix}.role" data-edit-type="text">${player.role || "[Role]"}</div>
+        ${statusControl}
       </div>
       ${deleteBtn}
     </div>
@@ -683,6 +698,21 @@ function renderSquads() {
     });
   });
 
+  document.querySelectorAll("[data-status-select]").forEach((select) => {
+    select.addEventListener("change", async () => {
+      const idx = parseInt(select.dataset.statusSelect, 10);
+      const newStatus = select.value === "then" ? "then" : "now";
+      siteContent.squads[currentGame].players[idx].status = newStatus;
+      try {
+        await apiRequest("/content", { method: "PUT", body: JSON.stringify(siteContent) });
+        showToast(`Marked as ${newStatus === "now" ? "Now" : "Then"}.`);
+        renderSquads();
+      } catch (err) {
+        showToast(err.message || "Could not update. Try again.");
+      }
+    });
+  });
+
   document.querySelectorAll('.admin-add-btn[data-add="player"], .admin-add-btn[data-add="announcement"]').forEach((btn) => {
     btn.classList.toggle("hidden", !isAdminUser());
   });
@@ -731,11 +761,11 @@ function renderAll() {
     .join("");
 
   // Founder
-  document.getElementById("founderCard").innerHTML = renderPersonCard(c.founder || {}, { editPrefix: "founder", large: true });
+  document.getElementById("founderCard").innerHTML = renderPersonCard(c.founder || {}, { editPrefix: "founder", size: "founder" });
 
   // Co-founders
   document.getElementById("coFoundersGrid").innerHTML = (c.coFounders || [])
-    .map((p, i) => renderPersonCard(p, { editPrefix: `coFounders.${i}`, deleteKey: `coFounders.${i}`, large: true }))
+    .map((p, i) => renderPersonCard(p, { editPrefix: `coFounders.${i}`, deleteKey: `coFounders.${i}`, size: "cofounder" }))
     .join("");
 
   // Team
@@ -821,7 +851,7 @@ const blankItemFor = {
   coFounder: () => ({ name: "", title: "", bio: "", photoUrl: "" }),
   achievements: () => ({ title: "", event: "", year: "", description: "", photoUrl: "" }),
   highlight: () => ({ title: "", description: "", photoUrl: "" }),
-  player: () => ({ name: "", gamingId: "", role: "", photoUrl: "" }),
+  player: () => ({ name: "", gamingId: "", role: "", photoUrl: "", status: "now" }),
   announcement: () => ({ title: "", body: "", date: "" }),
   tournament: () => ({ name: "", game: currentTournamentGame, status: "upcoming", date: "", description: "", result: "", photoUrl: "", registrationLink: "" })
 };
