@@ -47,19 +47,16 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // Same safe backfill for the newer hero.jerseyPhotoUrl / hero.carouselPhotos
-    // fields — older documents won't have these yet.
+    // Same safe backfill for the hero.jerseyPhotoUrl field — older
+    // documents won't have this yet.
     if (content.hero && content.hero.jerseyPhotoUrl === undefined) {
       content.hero.jerseyPhotoUrl = "";
       needsSave = true;
     }
-    if (!content.hero || !Array.isArray(content.hero.carouselPhotos)) {
-      content.hero.carouselPhotos = ["", "", "", ""];
-      needsSave = true;
-    } else if (content.hero.carouselPhotos.length < 4) {
-      while (content.hero.carouselPhotos.length < 4) {
-        content.hero.carouselPhotos.push("");
-      }
+
+    // Same safe backfill for highlights — older documents won't have this.
+    if (!Array.isArray(content.highlights)) {
+      content.highlights = [];
       needsSave = true;
     }
 
@@ -86,6 +83,7 @@ router.get("/", async (req, res) => {
       content.markModified("squads");
       content.markModified("hero");
       content.markModified("tournaments");
+      content.markModified("highlights");
       await content.save();
     }
 
@@ -107,7 +105,7 @@ router.get("/", async (req, res) => {
 */
 router.put("/", requireAuth, requireAdmin, async (req, res) => {
   try {
-    const allowedFields = ["hero", "founder", "coFounders", "team", "achievements", "squads", "tournaments", "contact"];
+    const allowedFields = ["hero", "founder", "coFounders", "team", "achievements", "highlights", "squads", "tournaments", "contact"];
     const updates = {};
     for (const field of allowedFields) {
       if (req.body[field] !== undefined) updates[field] = req.body[field];

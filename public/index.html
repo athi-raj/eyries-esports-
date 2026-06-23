@@ -8,7 +8,7 @@
 <title>Eyries Esports</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -85,6 +85,7 @@
   <nav class="navdrawer" id="navDrawer">
     <button class="navlink" data-target="home">Home</button>
     <button class="navlink" data-target="about">About</button>
+    <button class="navlink" id="openHighlightsBtn">Highlights</button>
     <button class="navlink" data-target="squads">Squads</button>
     <button class="navlink" data-target="tournaments">Tournaments</button>
     <button class="navlink" data-target="achievements">Achievements</button>
@@ -118,11 +119,6 @@
         <span>Scroll to explore</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
       </button>
-
-      <div class="hero-carousel" id="heroCarousel">
-        <div class="hero-carousel-track" id="heroCarouselTrack"></div>
-        <div class="hero-carousel-dots" id="heroCarouselDots"></div>
-      </div>
     </section>
 
     <!-- ============ ABOUT ============ -->
@@ -265,6 +261,25 @@
 </div>
 
 <!-- ============================================================ -->
+<!-- HIGHLIGHTS OVERLAY (only reachable via nav, never scroll)    -->
+<!-- ============================================================ -->
+<div class="tournaments-overlay hidden" id="highlightsOverlay">
+  <header class="topbar tournaments-topbar">
+    <button class="tournaments-back" id="highlightsBackBtn" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back</span>
+    </button>
+    <span class="brand-name">HIGHLIGHTS</span>
+    <span style="width:60px;"></span>
+  </header>
+
+  <div class="tournaments-content">
+    <div class="highlight-list" id="highlightList"></div>
+    <button class="admin-add-btn hidden" data-add="highlight">+ Add highlight</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
 <!-- ADMIN EDIT MODAL (reused for any text/photo field)            -->
 <!-- ============================================================ -->
 <div class="edit-modal-overlay hidden" id="editModalOverlay">
@@ -280,6 +295,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

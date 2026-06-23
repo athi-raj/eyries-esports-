@@ -267,6 +267,11 @@ document.querySelectorAll("[data-scrollto]").forEach((el) => {
   });
 });
 
+document.getElementById("openHighlightsBtn").addEventListener("click", () => {
+  openHighlightsOverlay();
+  closeNav();
+});
+
 /* ---------------------------------------------------------------------
    TOURNAMENTS OVERLAY — separate full-screen view, never part of scroll.
    Reached only via the hamburger "Tournaments" link or the bell button.
@@ -315,6 +320,90 @@ function renderAchievements() {
     .join("");
   attachEditHandlers();
   document.querySelectorAll('.admin-add-btn[data-add="achievements"]').forEach((btn) => {
+    btn.classList.toggle("hidden", !isAdminUser());
+  });
+}
+
+const highlightsOverlay = document.getElementById("highlightsOverlay");
+
+function openHighlightsOverlay() {
+  highlightsOverlay.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+  renderHighlights();
+}
+function closeHighlightsOverlay() {
+  highlightsOverlay.classList.add("hidden");
+  document.body.style.overflow = "";
+}
+document.getElementById("highlightsBackBtn").addEventListener("click", closeHighlightsOverlay);
+
+// Tracks which highlight cards have been expanded ("Read more" clicked) in
+// this session, so re-renders (e.g. after an admin edit) don't collapse a
+// card the visitor already opened.
+const expandedHighlights = new Set();
+
+function renderHighlightCard(item, index) {
+  const prefix = `highlights.${index}`;
+  const isExpanded = expandedHighlights.has(index);
+  const hasDesc = !!(item.description && item.description.trim());
+
+  const deleteBtn = isAdminUser()
+    ? `<button class="highlight-delete-btn" data-delete-highlight="${index}">Delete</button>`
+    : "";
+
+  return `
+    <div class="highlight-card">
+      <div class="highlight-photo" data-edit-field="${prefix}.photoUrl" data-edit-type="photo" ${photoStyle(item.photoUrl)}>
+        ${item.photoUrl ? "" : "1080×1350 PHOTO"}
+      </div>
+      <div class="highlight-info">
+        <div class="highlight-title" data-edit-field="${prefix}.title" data-edit-type="text">${item.title || "[Highlight title]"}</div>
+        <div class="highlight-desc ${isExpanded ? "" : "collapsed"}" data-edit-field="${prefix}.description" data-edit-type="textarea">${item.description || "[Description]"}</div>
+        ${hasDesc ? `<button class="highlight-readmore" data-toggle-highlight="${index}">${isExpanded ? "Show less" : "Read more"}</button>` : ""}
+        ${deleteBtn}
+      </div>
+    </div>
+  `;
+}
+
+function renderHighlights() {
+  const c = siteContent;
+  const list = c.highlights || [];
+
+  document.getElementById("highlightList").innerHTML = list.length
+    ? list.map((h, i) => renderHighlightCard(h, i)).join("")
+    : `<div class="empty-note">No highlights yet.</div>`;
+
+  attachEditHandlers();
+
+  document.querySelectorAll("[data-toggle-highlight]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.toggleHighlight, 10);
+      if (expandedHighlights.has(idx)) {
+        expandedHighlights.delete(idx);
+      } else {
+        expandedHighlights.add(idx);
+      }
+      renderHighlights();
+    });
+  });
+
+  document.querySelectorAll("[data-delete-highlight]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const idx = parseInt(btn.dataset.deleteHighlight, 10);
+      if (!confirm("Delete this highlight? This can't be undone.")) return;
+      siteContent.highlights.splice(idx, 1);
+      try {
+        await apiRequest("/content", { method: "PUT", body: JSON.stringify(siteContent) });
+        showToast("Highlight deleted.");
+        renderHighlights();
+      } catch (err) {
+        showToast(err.message || "Could not delete. Try again.");
+      }
+    });
+  });
+
+  document.querySelectorAll('.admin-add-btn[data-add="highlight"]').forEach((btn) => {
     btn.classList.toggle("hidden", !isAdminUser());
   });
 }
@@ -578,65 +667,6 @@ document.querySelectorAll(".game-switch-btn").forEach((btn) => {
   });
 });
 
-/* ---------------------------------------------------------------------
-   HERO CAROUSEL — 4 auto-scrolling photos, admin-editable via paste-URL
-   --------------------------------------------------------------------- */
-let carouselIndex = 0;
-let carouselTimer = null;
-
-function renderHeroCarousel(photos) {
-  // Always show exactly 4 slots, even if some are empty placeholders.
-  const slots = [0, 1, 2, 3].map((i) => photos[i] || "");
-
-  const track = document.getElementById("heroCarouselTrack");
-  track.innerHTML = slots
-    .map((url, i) => {
-      const bg = url ? `style="background-image:url('${url}')"` : "";
-      const editAttrs = `data-edit-field="hero.carouselPhotos.${i}" data-edit-type="photo"`;
-      return `
-        <div class="hero-carousel-slide ${i === 0 ? "active" : ""}" data-slide-index="${i}" ${bg} ${editAttrs}>
-          ${url ? "" : `<span class="hero-carousel-slide-placeholder">Photo ${i + 1}</span>`}
-        </div>
-      `;
-    })
-    .join("");
-
-  const dots = document.getElementById("heroCarouselDots");
-  dots.innerHTML = slots
-    .map((_, i) => `<button class="hero-carousel-dot ${i === 0 ? "active" : ""}" data-dot-index="${i}"></button>`)
-    .join("");
-
-  dots.querySelectorAll(".hero-carousel-dot").forEach((dot) => {
-    dot.addEventListener("click", () => {
-      goToSlide(parseInt(dot.dataset.dotIndex, 10));
-      restartCarouselTimer();
-    });
-  });
-
-  attachEditHandlers();
-
-  carouselIndex = 0;
-  restartCarouselTimer();
-}
-
-function goToSlide(index) {
-  const slides = document.querySelectorAll(".hero-carousel-slide");
-  const dots = document.querySelectorAll(".hero-carousel-dot");
-  if (!slides.length) return;
-
-  carouselIndex = ((index % slides.length) + slides.length) % slides.length;
-
-  slides.forEach((slide, i) => slide.classList.toggle("active", i === carouselIndex));
-  dots.forEach((dot, i) => dot.classList.toggle("active", i === carouselIndex));
-}
-
-function restartCarouselTimer() {
-  clearInterval(carouselTimer);
-  carouselTimer = setInterval(() => {
-    goToSlide(carouselIndex + 1);
-  }, 5000);
-}
-
 function renderAll() {
   const c = siteContent;
 
@@ -657,9 +687,6 @@ function renderAll() {
     heroJersey.style.backgroundImage = "";
     heroJersey.innerHTML = `<span class="hero-jersey-placeholder">Jersey photo</span>`;
   }
-
-  // Hero auto-scrolling photo carousel (4 slides, admin-editable)
-  renderHeroCarousel(c.hero?.carouselPhotos || ["", "", "", ""]);
 
   // Founder
   document.getElementById("founderCard").innerHTML = renderPersonCard(c.founder || {}, { editPrefix: "founder" });
@@ -734,6 +761,7 @@ function rowHtml(label, value, field) {
 const blankItemFor = {
   team: () => ({ name: "", title: "", bio: "", photoUrl: "" }),
   achievements: () => ({ title: "", event: "", year: "", description: "", photoUrl: "" }),
+  highlight: () => ({ title: "", description: "", photoUrl: "" }),
   player: () => ({ name: "", gamingId: "", role: "", photoUrl: "" }),
   announcement: () => ({ title: "", body: "", date: "" }),
   tournament: () => ({ name: "", game: currentTournamentGame, status: "upcoming", date: "", description: "", result: "", photoUrl: "", registrationLink: "" })
@@ -751,6 +779,9 @@ document.querySelectorAll(".admin-add-btn").forEach((btn) => {
     } else if (kind === "achievements") {
       siteContent.achievements = siteContent.achievements || [];
       siteContent.achievements.push(makeBlank());
+    } else if (kind === "highlight") {
+      siteContent.highlights = siteContent.highlights || [];
+      siteContent.highlights.push(makeBlank());
     } else if (kind === "player") {
       siteContent.squads = siteContent.squads || {};
       siteContent.squads[currentGame] = siteContent.squads[currentGame] || { players: [], announcements: [] };
@@ -775,6 +806,8 @@ document.querySelectorAll(".admin-add-btn").forEach((btn) => {
       showToast("Added — click its fields to fill them in.");
       if (kind === "tournament") {
         renderTournaments();
+      } else if (kind === "highlight") {
+        renderHighlights();
       } else {
         renderAll();
       }
@@ -854,14 +887,16 @@ editModalSave.addEventListener("click", async () => {
     showToast("Saved.");
 
     // Re-render whichever view is actually visible right now. The main
-    // scrollable page, the Tournaments overlay, and the Achievements
-    // overlay each have their own render function — renderAll() alone
-    // doesn't touch the other two, so without this an edit made while
-    // an overlay is open would save correctly but not visibly update.
+    // scrollable page, the Tournaments overlay, the Achievements overlay,
+    // and the Highlights overlay each have their own render function —
+    // renderAll() alone doesn't touch the others, so without this an edit
+    // made while an overlay is open would save correctly but not visibly update.
     if (!tournamentsOverlay.classList.contains("hidden")) {
       renderTournaments();
     } else if (!achievementsOverlay.classList.contains("hidden")) {
       renderAchievements();
+    } else if (!highlightsOverlay.classList.contains("hidden")) {
+      renderHighlights();
     } else {
       renderAll();
     }

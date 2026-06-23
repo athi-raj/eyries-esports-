@@ -32,6 +32,15 @@ const achievementSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const highlightSchema = new mongoose.Schema(
+  {
+    title: { type: String, default: "" },
+    description: { type: String, default: "" }, // full text; fan view truncates to one line with "Read more"
+    photoUrl: { type: String, default: "" }      // admin-pasted URL, displayed at a 1080x1350 (4:5) ratio
+  },
+  { _id: false }
+);
+
 const playerSchema = new mongoose.Schema(
   {
     name: { type: String, default: "" },
@@ -80,14 +89,23 @@ const contentSchema = new mongoose.Schema({
     tagline: { type: String, default: "Multi-front roster // 4 active squads" },
     headline: { type: String, default: "Fly the Eyries colors" },
     subtext: { type: String, default: "Live scores, squads, and gear across BGMI, Valorant, PES & Free Fire." },
-    jerseyPhotoUrl: { type: String, default: "" }, // showcase image beside the hero text
-    carouselPhotos: { type: [String], default: ["", "", "", ""] } // 4 auto-scrolling photos, admin-editable URLs
+    jerseyPhotoUrl: { type: String, default: "" } // showcase image beside the hero text
   },
 
   founder: { type: personSchema, default: () => ({}) },
   coFounders: { type: [personSchema], default: [] },
   team: { type: [personSchema], default: [] },
   achievements: { type: [achievementSchema], default: [] },
+
+  /*
+    HIGHLIGHTS
+    ----------
+    Only reachable via the hamburger nav (same pattern as Achievements),
+    never part of normal home-page scrolling. Each entry is a large
+    1080x1350 (4:5 portrait) photo with a title and description. Fans see
+    one line of the description with a "Read more" link that expands it.
+  */
+  highlights: { type: [highlightSchema], default: [] },
 
   /*
     SQUADS
